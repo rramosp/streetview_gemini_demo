@@ -29,6 +29,9 @@ if not 'first_run' in st.session_state.keys():
     clipboard.copy('dummy')
     st.session_state['first_run'] = 'done'
 
+st.header('StreetView Analytics with Gemini', divider='gray')
+st.markdown('**Instructions**: Select a use case or navigate anywhere, click on the map and write a prompt. Send to Gemini.')
+
 paste = clipboard.paste()
 new_coords = False
 if paste.startswith('COORDS'):
@@ -43,17 +46,46 @@ folium.plugins.Geocoder(add_marker=False).add_to(m)
 
 m.add_child(folium.ClickForLatLng('"COORDS " + lat + "," + lng', alert=False))
 
-
-
-col1, col2 = st.columns([.7,.3])
+col1, col2 = st.columns([.6,.4])
 
 with col1:
 
     the_map = st_folium(m, 
                         center=marker_data['location'], 
                         zoom=marker_data['zoom'],
-                        width=1500, 
+                        width=1300,
+                        height=500, 
                         feature_group_to_add=marker_data['fg'])
+
+
+    c21,c22 = st.columns(2)
+    with c21:
+        sv_imgsize = st.selectbox(
+            "Streetview image size to download",
+            ("300x300", "500x500", "1000x1000"),
+            index=1,
+        )   
+    with c22:
+        sv_zoom = st.selectbox(
+            "Streetview zoom level to download",
+            (1,3,6,10,20),
+            index=2,
+        )   
+
+    if marker_data['location'] is not None:
+
+        lat, lon = marker_data['location']
+        st.markdown (f'Downloaded streetView 360 imagery at lat: {lat:.5f}, lon: {lon:.5f}')
+        headings = [0,90,180,270]
+        svimg = {}
+
+        for heading in headings:
+            svimg[heading] = utils.pull_streetview_image(lon, lat, heading=heading, zoom=sv_zoom, size=sv_imgsize)
+
+        svimg = np.vstack([np.transpose(z, (1,0,2)) for z in svimg.values()])
+        svimg = np.transpose(svimg, (1,0,2))
+        st.image(svimg)
+
 
 with col2:
     st.header('Use cases', divider='gray')
@@ -83,52 +115,21 @@ Are there informal business in this image. If so, indicate precisely where and i
             st.rerun()
 
 
-    c21,c22 = st.columns(2)
-    with c21:
-        sv_imgsize = st.selectbox(
-            "Streetview image size to download",
-            ("300x300", "500x500", "1000x1000"),
-            index=1,
-        )   
-    with c22:
-        sv_zoom = st.selectbox(
-            "Streetview zoom level to download",
-            (1,3,6,10,20),
-            index=2,
-        )   
-
+    st.header('Gemini')
     if 'prompt_text' in st.session_state:
         text = st.session_state['prompt_text']
     else:
         text = ''
-    prompt_box = st.text_area(label='prompt', value=text, height=400)
+    prompt_box = st.text_area(label='prompt (edit it!!)', value=text, height=150)
 
-
-if marker_data['location'] is not None:
-
-    col1, col2 = st.columns([.6,.4])
-
-    with col1:
-
-        lat, lon = marker_data['location']
-        st.write (f'lat: {lat:.5f}, lon: {lon:.5f}')
-        headings = [0,90,180,270]
-        svimg = {}
-
-        for heading in headings:
-            svimg[heading] = utils.pull_streetview_image(lon, lat, heading=heading, zoom=sv_zoom, size=sv_imgsize)
-
-        svimg = np.vstack([np.transpose(z, (1,0,2)) for z in svimg.values()])
-        svimg = np.transpose(svimg, (1,0,2))
-        st.image(svimg)
-
-    with col2:
+    if marker_data['location'] is not None:
         if st.button('send to gemini'):
             prompt = str(prompt_box).strip()
             if len(prompt)==0:
                 prompt = 'describe this image'
 
             r = utils.get_gemini_response(svimg, prompt)
-            st.markdown('**gemini response**')
-            st.write(r.text)
+            st.markdown(f'**gemini response**\n\n{r.text}')
+
+            
 print ('------------------------')
