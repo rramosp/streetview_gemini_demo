@@ -68,7 +68,9 @@ with col2:
     with c2:
         if st.button('medellin [informal business]'):
             clipboard.copy('COORDS 6.24949,-75.57015')
-            st.session_state['prompt_text'] = 'Are there informal business in this image. If so, indicate precisely where.'
+            st.session_state['prompt_text'] = '''
+Are there informal business in this image. If so, indicate precisely where and include bounding box detections in json            
+            '''
             st.rerun()
 
     with c3:
