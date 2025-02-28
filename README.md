@@ -7,4 +7,5 @@ This demo allows you to navigate to a location in Google StreetView and use Gemi
 - Detect informal business
 - Anything in your imagination
 
-![sample]((https://github.com/rramosp/streetview_gemini_demo/blob/master/imgs/svgemini.png)
+![metric objects definitions](imgs/svgemini.png)
+
