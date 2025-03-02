@@ -5,13 +5,51 @@ import folium
 import numpy as np
 import tempfile
 from google import genai
+import streamlit as st
+import base64
 
 def get_api_key():
     with open('apikey.txt') as f:
         api_key = f.read().strip()
     return api_key
 
-def pull_streetview_image(lon, lat, heading=180, zoom=5, size='600x600'):
+
+def text_with_gif(text, image_file):
+    with open("../imgs/hourglass.gif", "rb") as file_:
+        contents = file_.read()
+        data_url = base64.b64encode(contents).decode("utf-8")
+    
+    component = st.markdown(
+        f'{text} <img src="data:image/gif;base64,{data_url}" width=30 alt="waiting">',
+        unsafe_allow_html=True,
+    )
+    return component
+
+def hide_buttons():
+    st.markdown(
+        """
+        <style>
+        button[data-testid="stBaseButton-secondary"] {
+            display: none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def unhide_buttons():
+    st.markdown(
+        """
+        <style>
+        button[data-testid="stBaseButton-secondary"] {
+            display: block;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def pull_streetview_image(lon, lat, heading=180, fov=90, pitch=0, size='600x600'):
 
     """Takes an addres string as an input and returns an image from google maps streetview api"""
     pic_base = 'https://maps.googleapis.com/maps/api/streetview?'
@@ -20,7 +58,8 @@ def pull_streetview_image(lon, lat, heading=180, zoom=5, size='600x600'):
     pic_params = {'key': get_api_key(),
                 'location' : f"{lat},{lon}",
                 'heading': heading,
-                'zoom': zoom ,
+                'fov': fov ,
+                'pitch': pitch,
                 'size': size}
     
     #Requesting data
@@ -77,3 +116,47 @@ def get_gemini_response(img, prompt):
         )
     
     return response
+
+
+def add_basemaps(m):
+
+    basemaps = {
+        'Google Maps': folium.TileLayer(
+            tiles = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+            attr = 'Google',
+            name = 'Google Maps',
+            overlay = True,
+            control = True
+        ),
+        'Google Satellite': folium.TileLayer(
+            tiles = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            attr = 'Google',
+            name = 'Google Satellite',
+            overlay = True,
+            control = True
+        ),
+        'Google Terrain': folium.TileLayer(
+            tiles = 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+            attr = 'Google',
+            name = 'Google Terrain',
+            overlay = True,
+            control = True
+        ),
+        'Google Satellite Hybrid': folium.TileLayer(
+            tiles = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            attr = 'Google',
+            name = 'Google Satellite',
+            overlay = True,
+            control = True
+        ),
+        'Esri Satellite': folium.TileLayer(
+            tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attr = 'Esri',
+            name = 'Esri Satellite',
+            overlay = True,
+            control = True
+        )
+    }
+    for k,v in basemaps.items():
+        v.add_to(m)
+    m.add_child(folium.LayerControl())
