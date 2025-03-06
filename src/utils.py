@@ -7,6 +7,7 @@ import tempfile
 from google import genai
 import streamlit as st
 import base64
+import os
 
 def get_api_key():
     with open('apikey.txt') as f:
@@ -19,12 +20,8 @@ def text_with_gif(text, image_file):
         contents = file_.read()
         data_url = base64.b64encode(contents).decode("utf-8")
     
-    component = st.markdown(
-        f'{text} <img src="data:image/gif;base64,{data_url}" width=30 alt="waiting">',
-        unsafe_allow_html=True,
-    )
-    return component
-
+    return f'{text} <img src="data:image/gif;base64,{data_url}" width=30 alt="waiting">'
+    
 def hide_buttons():
     st.markdown(
         """
@@ -55,7 +52,8 @@ def pull_streetview_image(lon, lat, heading=180, fov=90, pitch=0, size='600x600'
     pic_base = 'https://maps.googleapis.com/maps/api/streetview?'
 
     # define the params for the picture request
-    pic_params = {'key': get_api_key(),
+    #pic_params = {'key': get_api_key(),
+    pic_params = {'key': os.environ['STREETVIEW_API_KEY'],
                 'location' : f"{lat},{lon}",
                 'heading': heading,
                 'fov': fov ,
@@ -86,7 +84,6 @@ def add_marker(session_state):
 
     coords = hist[-1]
     lat,lon = [float(i) for i in coords.split(' ')[-1].split(',')]
-    print ('coords', lat, lon)
     marker_feature_group = folium.FeatureGroup(name=str(np.random.randint(1000000)))
     marker = folium.Marker(
             location=[lat, lon],
@@ -106,7 +103,8 @@ def get_gemini_response(img, prompt):
         io.imsave(filename, img)
     
     
-        client = genai.Client(api_key=get_api_key())
+        #client = genai.Client(api_key=get_api_key())
+        client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
         img_object = client.files.upload(file=filename)
     
     

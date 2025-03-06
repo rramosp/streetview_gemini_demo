@@ -8,7 +8,6 @@ import numpy as np
 from streamlit_folium import st_folium
 import folium
 from tqdm import tqdm
-from st_click_detector import click_detector
 from PIL import Image
 import io
 import pickle
@@ -22,6 +21,26 @@ import utils
 
 st.set_page_config(layout='wide')
 
+if not 'previous_prompt_text' in st.session_state.keys():
+    st.session_state['previous_prompt_text'] = None    
+
+if not 'prompt_text' in st.session_state.keys():
+    st.session_state['prompt_text'] = None    
+
+if not 'previous_location' in st.session_state.keys():
+    st.session_state['previous_location'] = None    
+
+if not 'svimage' in st.session_state.keys():
+    st.session_state['svimage'] = None    
+
+if not 'previous_prompt_text' in st.session_state.keys():
+    st.session_state['previous_prompt_text'] = None    
+
+if not 'gemini_response' in st.session_state.keys():
+    st.session_state['gemini_response'] = None    
+
+
+
 if not 'clipboard_history' in st.session_state.keys():
     st.session_state['clipboard_history'] = []
 
@@ -29,7 +48,38 @@ if not 'first_run' in st.session_state.keys():
     clipboard.copy('dummy')
     st.session_state['first_run'] = 'done'
 
-st.header('StreetView Analytics with Gemini', divider='gray')
+def call_gemini(svimg, prompt, msgbox):
+    prompt = prompt.strip()
+    msgbox.markdown(utils.text_with_gif('calling gemini', '../imgs/hourglass.gif'),
+                        unsafe_allow_html=True)
+
+    if len(prompt)==0:
+        prompt = 'describe this image'
+
+    r = utils.get_gemini_response(svimg, prompt)
+    msgbox.empty()
+    return r
+
+def disable_ctrl_enter():
+    import streamlit.components.v1 as components
+    components.html(
+        """
+    <script>
+    const textareas = parent.document.querySelectorAll("textarea");
+    textareas.forEach(textarea => {
+      textarea.addEventListener("keydown", function(event) {
+        if ((event.ctrlKey || event.metaKey) && event.keyCode === 13) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
+    });
+    </script>
+    """,
+        height=0,
+    )
+
+st.header('StreetView analytics with Gemini', divider='gray')
 st.markdown('**Instructions**: Select a use case and click `send to gemini` **OR** navigate anywhere, click on the map, write a prompt and `send to gemini`.')
 
 paste = clipboard.paste()
@@ -39,7 +89,6 @@ if paste.startswith('COORDS'):
     st.session_state['clipboard_history'].append(paste)
 
 marker_data = utils.add_marker(st.session_state)
-print (marker_data)
 
 m = folium.Map(zoom_start = marker_data['zoom'])
 folium.plugins.MousePosition().add_to(m)
@@ -59,53 +108,45 @@ with col1:
                         height=500, 
                         feature_group_to_add=marker_data['fg'])
 
+    gemini_response = None
 
-    c21,c22,c23 = st.columns(3)
-    with c21:
-        sv_imgsize = st.selectbox(
-            "Streetview image size to download",
-            ("300x300", "500x500", "1000x1000"),
-            index=1,
-        )   
-    with c22:
-        sv_fov = st.selectbox(
-            "Streetview field of view (smaller values imply more zoom)",
-            (11,22,45,90),
-            index=3,
-        )   
-
-    with c23:
-        sv_pitch = st.selectbox(
-            "Streetview pitch (view direction, 0 is horizontal, 90 is upwards)",
-            (0,30,60,90),
-            index=0,
-        )   
-
-
-    if marker_data['location'] is not None:
+    msgbox = st.markdown('')
+    
+    if marker_data['location'] != st.session_state['previous_location'] or \
+       st.session_state['prompt_text'] != st.session_state['previous_prompt_text']:
 
         lat, lon = marker_data['location']
-        msg = st.markdown('')
 
-        waitimg = utils.text_with_gif('downloading streetview imagery', '../imgs/hourglass.gif')
+        msgbox.markdown(utils.text_with_gif('downloading streetview imagery', '../imgs/hourglass.gif'),
+                                unsafe_allow_html=True)
         headings = [0,90,180,270]
         svimg = {}
 
         for heading in headings:
             svimg[heading] = utils.pull_streetview_image(lon, lat, 
                                                          heading=heading, 
-                                                         fov=sv_fov, 
-                                                         pitch=sv_pitch,
-                                                         size=sv_imgsize)
+                                                         fov=90, 
+                                                         pitch=0,
+                                                         size='500x500')
 
         svimg = np.vstack([np.transpose(z, (1,0,2)) for z in svimg.values()])
         svimg = np.transpose(svimg, (1,0,2))
-        st.image(svimg)
-        msg.write (f'Downloaded streetView 360 imagery at lat: {lat:.5f}, lon: {lon:.5f}')
-        waitimg.empty()
 
-    if st.button('vote'):
-        utils.vote()
+        gemini_response = call_gemini(svimg, st.session_state['prompt_text'], msgbox)
+
+        st.session_state['svimage'] = svimg
+        st.session_state['gemini_response'] = gemini_response
+        msgbox.empty()
+        
+        st.session_state['previous_prompt_text'] = st.session_state['prompt_text']
+        st.session_state['previous_location'] = marker_data['location']
+
+    if st.session_state['svimage'] is not None:
+        lat, lon = marker_data['location']
+        st.image(st.session_state['svimage'])
+        msgbox.write (f'Downloaded streetView 360 imagery at lat: {lat:.5f}, lon: {lon:.5f}')
+
+        
 
 with col2:
     st.header('Use cases', divider='gray')
@@ -150,24 +191,21 @@ what is the overall state of the buildings?
     else:
         text = ''
     #st.markdown('prompt (**EDIT and PLAY with IT**)!!')
-    prompt_box = st.text_area(label='prompt (**EDIT and PLAY with IT**)!!', value=text, height=150)
+    prompt_box = st.text_area(label='prompt (**EDIT and PLAY with IT**)!!', value=text, height=100)
 
     if marker_data['location'] is not None:
-        ca, cb = st.columns(2)
-        with ca:
-            gemini_button = st.button('send to gemini')
+        gemini_button = st.button('send to gemini')
+
+        if st.session_state['gemini_response'] is not None:
+            st_response = st.markdown(f'**gemini response**\n\n{st.session_state['gemini_response'].text}')
+        else:
+            st_response = st.markdown('')
 
         if gemini_button:
-            with cb:
-                waitimg = utils.text_with_gif('asking gemini', '../imgs/hourglass.gif')
-            utils.hide_buttons()
-            prompt = str(prompt_box).strip()
-            if len(prompt)==0:
-                prompt = 'describe this image'
+            st.session_state['prompt_text'] = str(prompt_box).strip()
+            st.rerun()
 
-            r = utils.get_gemini_response(svimg, prompt)
-            st.markdown(f'**gemini response**\n\n{r.text}')
-            waitimg.empty()
-            utils.unhide_buttons()
-            
-print ('------------------------')
+if st.session_state['previous_prompt_text'] is None and st.session_state['prompt_text'] is not None:
+    st.session_state['previous_prompt_text'] = st.session_state['prompt_text']
+
+disable_ctrl_enter()
