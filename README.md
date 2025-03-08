@@ -1,4 +1,4 @@
-# Streetview Analytics with Gemini
+# Streetview analytics with Gemini
 
 This demo allows you to navigate to a location in Google StreetView and use Gemini to find stuff about it. For instance
 
@@ -11,3 +11,7 @@ This demo allows you to navigate to a location in Google StreetView and use Gemi
 
 ![metric objects definitions](imgs/svgemini.png)
 
+# Running the demo
+
+    checkout this repo
+    sudo docker build . -t svgemini/demo

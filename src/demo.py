@@ -16,10 +16,13 @@ from folium.utilities import JsCode
 import requests
 import tempfile
 from skimage import io
-import clipboard
 import utils
+from components import ClickForMarker
+import clipboard
 
 st.set_page_config(layout='wide')
+
+
 
 if not 'previous_prompt_text' in st.session_state.keys():
     st.session_state['previous_prompt_text'] = None    
@@ -39,17 +42,18 @@ if not 'previous_prompt_text' in st.session_state.keys():
 if not 'gemini_response' in st.session_state.keys():
     st.session_state['gemini_response'] = None    
 
-
-
 if not 'clipboard_history' in st.session_state.keys():
     st.session_state['clipboard_history'] = []
 
 if not 'first_run' in st.session_state.keys():
-    clipboard.copy('dummy')
     st.session_state['first_run'] = 'done'
 
 def call_gemini(svimg, prompt, msgbox):
-    prompt = prompt.strip()
+    if prompt is None:
+        prompt = 'describe this image'
+    else:
+        prompt = prompt.strip()
+    
     msgbox.markdown(utils.text_with_gif('calling gemini', '../imgs/hourglass.gif'),
                         unsafe_allow_html=True)
 
@@ -83,8 +87,11 @@ st.header('StreetView analytics with Gemini', divider='gray')
 st.markdown('**Instructions**: Select a use case and click `send to gemini` **OR** navigate anywhere, click on the map, write a prompt and `send to gemini`.')
 
 paste = clipboard.paste()
+
+st.write('coords ' + paste)
 new_coords = False
-if paste.startswith('COORDS'):
+if paste is not None and paste.startswith('COORDS') \
+   and 'first_run' in st.session_state.keys():
     new_coords = True
     st.session_state['clipboard_history'].append(paste)
 
@@ -190,7 +197,6 @@ what is the overall state of the buildings?
         text = st.session_state['prompt_text']
     else:
         text = ''
-    #st.markdown('prompt (**EDIT and PLAY with IT**)!!')
     prompt_box = st.text_area(label='prompt (**EDIT and PLAY with IT**)!!', value=text, height=100)
 
     if marker_data['location'] is not None:
