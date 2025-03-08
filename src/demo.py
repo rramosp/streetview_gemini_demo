@@ -17,7 +17,6 @@ import requests
 import tempfile
 from skimage import io
 import utils
-from components import ClickForMarker
 import clipboard
 
 st.set_page_config(layout='wide')
@@ -88,7 +87,6 @@ st.markdown('**Instructions**: Select a use case and click `send to gemini` **OR
 
 paste = clipboard.paste()
 
-st.write('coords ' + paste)
 new_coords = False
 if paste is not None and paste.startswith('COORDS') \
    and 'first_run' in st.session_state.keys():
