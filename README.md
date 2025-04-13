@@ -40,7 +40,7 @@ install
     cd streetview_gemini_demo
     conda create -n demo python=3.12
     conda activate demo
-    pip install -r requirements
+    pip install -r requirements.txt
 
 run
 
