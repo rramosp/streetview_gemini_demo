@@ -5,7 +5,9 @@ WORKDIR /usr/local/app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt update
-RUN apt install -y xclip
+RUN apt install -y xorg xclip
+RUN echo "    ForwardX11 yes" >> /etc/ssh/ssh_config
+RUN echo "    ForwardAgent yes" >> /etc/ssh/ssh_config
 
 # Copy in the source code
 COPY src ./src

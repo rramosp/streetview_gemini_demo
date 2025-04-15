@@ -17,7 +17,6 @@ import requests
 import tempfile
 from skimage import io
 import utils
-from components import ClickForMarker
 import clipboard
 
 st.set_page_config(layout='wide')
