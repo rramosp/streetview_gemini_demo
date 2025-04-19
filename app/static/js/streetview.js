@@ -20,8 +20,6 @@ function initialize() {
   document.map = map
 }
 
-
-
 async function call_gemini() {
   var panorama = document.panorama
   const position = panorama.getPosition();
@@ -98,20 +96,7 @@ async function call_gemini() {
 
 }                           
 
-function goToLocation(lat, lng, heading, pitch, zoom) {
-
-  const newLatLng = new google.maps.LatLng(lat, lng);
-  var panorama = document.map.getStreetView(); 
-  panorama.setPosition(newLatLng);
-  panorama.setPov({heading: heading, pitch: pitch})
-  panorama.setZoom(zoom)
-  console.log('ok')
-}
-
-
-function goto_usecase(prompt, lat, lng, heading, pitch, zoom) {
-
-  document.getElementById('prompt').value = prompt
+function goto_location(lat, lng, heading, pitch, zoom) {
 
   const newLatLng = new google.maps.LatLng(lat, lng);
   var panorama = document.map.getStreetView(); 
@@ -119,10 +104,23 @@ function goto_usecase(prompt, lat, lng, heading, pitch, zoom) {
   panorama.setPov({heading: heading, pitch: pitch})
   panorama.setZoom(zoom)
   document.map.setCenter(newLatLng)
+
+  document.getElementById('gemini-text-response').innerHTML = ''  
+  document.getElementById('gemini-image-response').innerHTML = ''  
+  document.getElementById('request-params').innerHTML = ''  
+  document.getElementById('response-metadata').innerHTML = ''  
+}
+
+
+function goto_usecase(prompt, lat, lng, heading, pitch, zoom) {
+
+  document.getElementById('prompt').value = prompt
+  goto_location(lat, lng, heading, pitch, zoom)
+
 }
 
 
 window.initialize = initialize;
 window.call_gemini = call_gemini;
-window.goToLocation = goToLocation;
+window.goto_location = goto_location;
 window.goto_usecase = goto_usecase;
