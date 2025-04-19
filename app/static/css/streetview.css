@@ -11,3 +11,9 @@ body {
   height: 50%;
   width: 50%;
 }
+
+.btn:focus {
+  background-color: inherit !important;
+  box-shadow: none !important;
+  outline: none !important;
+}

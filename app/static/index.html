@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>Starter Template - Materialize</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+-->
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  
+  <link rel="stylesheet" type="text/css" href="css/streetview.css" />
+  <script type="module" src="js/streetview.js"></script>
+</head>
+<body>
+
+
+  <nav class="light-blue lighten-1" role="navigation">
+    <div class="nav-wrapper container">Gemini on StreetView</a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="#">YYY</a></li>
+      </ul>
+
+      <ul id="nav-mobile" class="sidenav">
+        <li><a href="#">XXX</a></li>
+      </ul>
+      <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    </div>
+  </nav>
+
+
+
+<div id="map"></div>
+<div id="pano"></div>
+
+
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key=XX&loading=async&callback=window.initialize">
+</script>
+
+
+<div clsas="'container">
+
+    <div class="row">
+      <div class="col s1"></div>
+      <div class="col s6">
+        <p/><p/><p/><p/>
+        <h6><font color="'blue'">Navigate wherever you want and make a question to Gemini about the StreetView image above</font></h6>
+      </div>
+
+      <div class="col s5">
+        <p/><p/><p/><p/>
+        <h6><font color="'blue'">Or choose any of these selected use cases</font></h6>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s1"></div>
+      <div class="col s4">
+        <textarea id="prompt" class="materialize-textarea"></textarea>
+      </div>
+      <div class="col s2">
+        <a href="#" id="ask-gemini-button" onclick="window.call_gemini();return false;" class="btn-large waves-effect waves-light orange">ask <b>gemini-2.0-flash-exp</b></a>
+      </div>
+      <div class="col s4">
+        <ul class="tabs tabs-fixed-width usecase-tabs z-depth-1">
+          <li class="tab disabled"><a class="active" href="#none"> </a></li>
+          <li class="tab"><a href="#madrid" onclick="window.goto_location(40.4185503,-3.706557, 39, -2.17, 0.2)">Madrid</a></li>
+          <li class="tab"><a href="#medellin" onclick="window.goto_location(6.249394823083914,-75.57004210475445, 30, -8.9, 0.2)">Medellín</a></li>
+          <li class="tab"><a href="#rome" onclick="window.goto_location(41.89451,12.47358, 175, 6.12, 0.2)">Rome</a></li>
+          <li class="tab"><a href="#newyork" onclick="window.goto_location(40.71494,-73.99840, 85, 0.0, 0.2)"">New York</a></li>
+        </ul>
+
+        <div id="none" class="col s12">
+          <p/>select use case
+        </div>        
+          
+        <div id="madrid" class="col s12">
+          <p/>
+          
+          <a href="#" id="goto-button" onclick="window.goto_usecase('assess the size of the constructions works, give an estimate in m2 and remove them from the image ', 
+          40.4185503,-3.706557, 39, -2.17, 0.2);call_gemini(); return false;" class="btn-small waves-effect waves-light green">Remove construction works</a>
+
+          <a href="#" id="goto-button" onclick="window.goto_usecase('Assess the degree of progress of this constructions works. Explain why', 
+          40.4185503,-3.706557, 39, -2.17, 0.2);call_gemini(); return false;" class="btn-small waves-effect waves-light green">Asses the state of construction</a>
+
+          <a href="#" id="goto-button" onclick="window.goto_usecase('add a grass pathwalk on the left', 
+          40.4185503,-3.706557, 39, -2.17, 0.2);call_gemini(); return false;" class="btn-small waves-effect waves-light green">Add grass</a>
+
+
+        </div>
+
+
+        <div id="medellin" class="col s12">
+          <p/>
+          <a href="#" id="goto-button" onclick="window.goto_usecase('Remove all informal business of this image. Estimate how much road space was gained', 
+          6.249394823083914,-75.57004210475445, 30, -8.9, 0.2);call_gemini(); return false;" class="btn-small waves-effect waves-light green">Remove informal business</a>
+
+          <a href="#" id="goto-button" onclick="window.goto_usecase('Assess the kind and number of informal business in this image', 
+          6.249394823083914,-75.57004210475445, 30, -8.9, 0.2);call_gemini(); return false;" class="btn-small waves-effect waves-light green">Characterize informal business</a>
+        
+          <a href="#" id="goto-button" onclick="window.goto_usecase('Simulate a flood with 20 centimeters of water above gound level', 
+          6.249394823083914,-75.57004210475445, 30, -8.9, 0.2);call_gemini(); return false;" class="btn-small waves-light green">Simulate flood</a>
+      
+        </div>
+
+        <div id="rome" class="col s12"><p/><p>
+          <a href="#" id="goto-button" onclick="window.goto_usecase('what is the name of business and restaurants that you see here? what is the overall state of the buildings?', 
+          41.89451,12.47358, 175, 6.12, 0.2);call_gemini(); return false;" class="btn-small waves-effect green">Get busines names and buildings status</a>
+        
+          <a href="#" id="goto-button" onclick="window.goto_usecase('count how many buildings with graffiti. Generate a new image remove it', 
+          41.89451,12.47358, 175, 6.12, 0.2);call_gemini(); return false;" class="btn-small waves-light green">Remove Graffiti</a>
+
+          <a href="#" id="goto-button" onclick="window.goto_usecase('identify artificial light sources present in the image and generate a simulation of night time', 
+          41.89451,12.47358, 175, 6.12, 0.2);call_gemini(); return false;" class="btn-small waves-light green">Simulate night time</a>
+
+
+        </div>
+        <div id="newyork" class="col s12"> <p/>
+          <a href="#" id="goto-button" onclick="window.goto_usecase('  count the number of people and vehicles in this image. also, read all the sings and text that you see', 
+          40.71494,-73.99840, 85, 0.0, 0.2);call_gemini();return false;" class="btn-small waves-effect green">read signs and count people</a>
+        
+        <a href="#" id="goto-button" onclick="window.goto_usecase('transform all cars into horse pulled carts and make the street a dirt road', 
+        40.71494,-73.99840, 85, 0.0, 0.2);call_gemini(); return false;" class="btn-small waves-effect green">Replace cars</a>
+
+        <a href="#" id="goto-button" onclick="window.goto_usecase('sit a lot of people on the terrace with blue tables on the right', 
+        40.71494,-73.99840, 85, 0.0, 0.2);call_gemini(); return false;" class="btn-small waves-effect green">Populate terrace</a>
+
+
+      </div>
+  
+        <script>
+          var el = document.querySelector('.tabs');
+          var instance = M.Tabs.init(el, {});
+        </script>
+      </div>
+    </div>
+  
+ 
+
+    <div class='row'>
+      <div class="col s4 offset-s2">
+        <div id="gemini-text-response"></div>
+      </div>
+      <div class="col s6">
+        <div id="gemini-image-response"></div>
+      </div>
+    </div>
+    <div class='row'>
+      <div class="col s4 offset-s2" id="request-params">
+      </div>
+    </div>
+    <div class='row'>
+      <div class="col s4 offset-s2" id="response-metadata">
+      </div>
+    </div>
+
+  </div>
+    <p/><p/>
+
+
+
+  <footer class="page-footer orange">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">Company Bio</h5>
+          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+
+
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Settings</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Link 1</a></li>
+            <li><a class="white-text" href="#!">Link 2</a></li>
+            <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li>
+          </ul>
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Connect</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Link 1</a></li>
+            <li><a class="white-text" href="#!">Link 2</a></li>
+            <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+      Made by <a class="orange-text text-lighten-3" href="http://materializecss.com">Materialize</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <!--  
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
+  -->
+  <script>
+
+    const buttons = document.querySelectorAll('.waves-effect');
+      buttons.forEach(button => {
+  
+  
+        button.addEventListener('click', function (e) {
+          // Timeout gives the waves time to animate
+          setTimeout(() => {
+            this.blur();
+  
+            // Cleanup extra wave elements if needed
+            const waves = this.querySelectorAll('.waves-ripple');
+            waves.forEach(wave => wave.remove());
+          }, 100); // Delay can be tweaked based on your ripple speed
+        });
+      });
+  </script>
+  
+
+
+  </body>
+</html>

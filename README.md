@@ -13,6 +13,18 @@ This demo allows you to navigate to a location in Google StreetView and use Gemi
 
 # Running the demo
 
+create a nre project in GCP
+
+api key with
+ --
+
+ gcloud services enable  --project keen-index-457301-a6 "maps-backend.googleapis.com"
+
+
+maps-backend.googleapis.com
+generativelanguage.googleapis.com          Generative Language API
+street-view-image-backend.googleapis.com   Streetview Static API
+
 Run this demo locally in your machine, as it uses the clipboard to communicate between Streamlit and javascript.
 
 ## with docker
