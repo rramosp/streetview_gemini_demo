@@ -34,7 +34,7 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
 
             # define the params for the picture request
             #pic_params = {'key': get_api_key(),
-            pic_params = {'key': os.environ['STREETVIEW_API_KEY'],
+            pic_params = {'key': os.environ['GCP_API_KEY'],
                         'location' : f"{lat},{lon}",
                         'heading': heading,
                         'fov': zoom2fov(zoom) ,
@@ -56,7 +56,7 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
             pic_response.close()
             
             #client = genai.Client(api_key=get_api_key())
-            client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+            client = genai.Client(api_key=os.environ['GCP_API_KEY'])
             img_object = client.files.upload(file=input_filename)
         
             response = client.models.generate_content(                
@@ -90,8 +90,16 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
 
 @app.route("/")
 def main():
-    return render_template('./index.html')
+    from glob import glob
+    print('main', os.getcwd(), glob('*'))
+    return send_from_directory('.', 'index.html')
 
+    #return render_template('./app/index.html')
+
+@app.route("/<path:path>")
+def send_local(path):
+	print('local', path)
+	return send_from_directory('.', path)
 
 @app.route('/foo', methods=['POST']) 
 def foo():
@@ -109,7 +117,7 @@ def gemini():
 
 
 @app.route('/static/<path:path>') #Everything else just goes by filename
-def senf_from_filesystem(path):
+def send_from_filesystem(path):
 	print(path)
 	return send_from_directory('./static/', path)
 

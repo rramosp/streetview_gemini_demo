@@ -1,0 +1,5 @@
+tqdm
+scikit-image
+google-genai
+flask
+markdown

@@ -33,15 +33,14 @@ install
 
     git clone https://github.com/rramosp/streetview_gemini_demo.git
     cd streetview_gemini_demo
-    sh build.sh
+    sh bin/build_docker.sh
 
 run
 
-    export STREETVIEW_API_KEY=[your streetview api key]
-    export GEMINI_API_KEY=[your gemini api key]
-    sh run.sh
+    export GCP_API_KEY=[your gcp api key]
+    sh bin/run_docker.sh
 
-open your browser at [http://localhost:8501](http://localhost:8501)
+open your browser at [http://localhost:5000](http://localhost:5000)
 
 
 ## with conda envs
@@ -57,8 +56,7 @@ install
 run
 
     cd src
-    export STREETVIEW_API_KEY=[your streetview api key]
-    export GEMINI_API_KEY=[your gemini api key]
-    streamlit run demo.py
+    export GCP_API_KEY=[your gcp api key]
+    bin/start.sh
 
-open your browser at [http://localhost:8501](http://localhost:8501)
+open your browser at [http://localhost:5000](http://localhost:5000)
