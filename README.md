@@ -9,25 +9,48 @@ This demo allows you to navigate to a location in Google StreetView and use Gemi
 - Read signs and panels for business, indications, places
 - Anything in your imagination
 
-![metric objects definitions](imgs/svgemini.png)
+![streetview with gemini](imgs/svgemini.png)
 
 # Running the demo
 
-create a nre project in GCP
 
-api key with
- --
+## Setup
 
- gcloud services enable  --project keen-index-457301-a6 "maps-backend.googleapis.com"
+create or choose a project in GCP and follow these steps
 
 
-maps-backend.googleapis.com
-generativelanguage.googleapis.com          Generative Language API
-street-view-image-backend.googleapis.com   Streetview Static API
+1. Enable the APIs
+   
+```
+        gcloud services enable --project <YOUR_PROJECT_ID> \
+            maps-backend.googleapis.com \
+            generativelanguage.googleapis.com \
+            street-view-image-backend.googleapis.com
+```
 
-Run this demo locally in your machine, as it uses the clipboard to communicate between Streamlit and javascript.
+Check they are enabled
 
-## with docker
+        gcloud services list --project <YOUR_PROJECT_ID>
+   
+
+1. In GCP Console, under `APIS and Services` $\to$ `Credentials` create TWO new API keys. 
+
+Allow one (`GOOGLE_MAPS_API_KEY`) to use the following API
+
+```
+        maps-backend.googleapis.com                Maps Javascript API
+```
+
+Allow the second one (`GENAI_API_KEY`) to use these APIs
+
+```
+        generativelanguage.googleapis.com          Generative Language API
+        street-view-image-backend.googleapis.com   Streetview Static API
+```
+
+
+
+## Run with docker (recommended)
 
 install
 
@@ -37,13 +60,14 @@ install
 
 run
 
-    export GCP_API_KEY=[your gcp api key]
+    export GOOGLE_MAPS_API_KEY=[your google maps api key]
+    export GENAI_API_KEY=[your genai api key]
     sh bin/run_docker.sh
 
 open your browser at [http://localhost:5000](http://localhost:5000)
 
 
-## with conda envs
+## Or run with conda envs
 
 install
 
@@ -55,8 +79,8 @@ install
 
 run
 
-    cd src
-    export GCP_API_KEY=[your gcp api key]
+    export GOOGLE_MAPS_API_KEY=[your google maps api key]
+    export GENAI_API_KEY=[your geani api key]
     bin/start.sh
 
 open your browser at [http://localhost:5000](http://localhost:5000)

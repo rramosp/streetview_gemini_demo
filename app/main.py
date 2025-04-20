@@ -34,7 +34,7 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
 
             # define the params for the picture request
             #pic_params = {'key': get_api_key(),
-            pic_params = {'key': os.environ['GCP_API_KEY'],
+            pic_params = {'key': os.environ['GENAI_API_KEY'],
                         'location' : f"{lat},{lon}",
                         'heading': heading,
                         'fov': zoom2fov(zoom) ,
@@ -56,7 +56,7 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
             pic_response.close()
             
             #client = genai.Client(api_key=get_api_key())
-            client = genai.Client(api_key=os.environ['GCP_API_KEY'])
+            client = genai.Client(api_key=os.environ['GENAI_API_KEY'])
             img_object = client.files.upload(file=input_filename)
         
             response = client.models.generate_content(                
