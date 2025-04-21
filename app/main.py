@@ -20,7 +20,14 @@ zoom2fov = lambda zoom: np.arctan(2**(1-zoom))*360/np.pi
 def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, size='1200x600'):
 
 
-    """Takes an addres string as an input and returns an image from google maps streetview api"""
+    """
+    Takes a prompt string and a location spec in Google Streetview and
+        
+        1. Uses the Streetview Static API to download the streetview image
+        2. Sends it to Gemini along with the prompt
+
+    Returns a dict with the text and image elements returned by Gemini             
+    """
     
     with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -33,7 +40,6 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
             pic_base = 'https://maps.googleapis.com/maps/api/streetview?'
 
             # define the params for the picture request
-            #pic_params = {'key': get_api_key(),
             pic_params = {'key': os.environ['GENAI_API_KEY'],
                         'location' : f"{lat},{lon}",
                         'heading': heading,
@@ -41,8 +47,7 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
                         'pitch': pitch,
                         'size': size}
             
-            #Requesting data
-            print('calling streetview')
+            # Call Streetview
             pic_response = requests.get(pic_base, params=pic_params)
 
 
@@ -52,10 +57,9 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
             with open(input_filename, "wb") as file:
                 file.write(pic_response.content)
             
-            # Closing connection to API
             pic_response.close()
             
-            #client = genai.Client(api_key=get_api_key())
+            # Call Gemini
             client = genai.Client(api_key=os.environ['GENAI_API_KEY'])
             img_object = client.files.upload(file=input_filename)
         
@@ -69,10 +73,8 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
             
             for part in response.candidates[0].content.parts:
                 if part.text:
-                    print ('has text')
                     response_html_text = markdown.markdown(part.text.strip().replace('**Caption:** ', ''))
                 elif part.inline_data:
-                    print ('has image')
                     image = Image.open(BytesIO((part.inline_data.data)))
                     image.save(output_filename)
                     
@@ -87,14 +89,11 @@ def call_streetview_and_gemini(prompt, lon, lat, heading=180, zoom=1, pitch=0, s
 
     return { 'html_text':response_html_text, 'html_image': response_html_image, 'metadata': response_metadata, 'model_id': model_id }
 
-
 @app.route("/")
 def main():
     from glob import glob
     print('main', os.getcwd(), glob('*'))
     return send_from_directory('.', 'index.html')
-
-    #return render_template('./app/index.html')
 
 @app.route("/<path:path>")
 def send_local(path):
