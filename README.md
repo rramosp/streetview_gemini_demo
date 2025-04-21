@@ -3,9 +3,9 @@
 This demo allows you to navigate to a location in Google StreetView and use Gemini to find stuff about it. For instance
 
 - Count people, signs, vehicles, trees
-- Estimate quality/status of road infrastructures, signs, markings
-- Estimate vegetation, characterize buildings
+- Estimate status of road infrastructures, buildings, etc.
 - Detect informal business, human activity
+- Simulate modifications (night time, remove/add elements, etc)
 - Read signs and panels for business, indications, places
 - Anything in your imagination
 
@@ -22,16 +22,19 @@ create or choose a project in GCP and follow these steps
 1. Enable the APIs
    
 ```
-        gcloud services enable --project <YOUR_PROJECT_ID> \
+        export PROJECT_ID=my_project_id
+
+        gcloud services enable --project ${PROJECT_ID} \
             maps-backend.googleapis.com \
             generativelanguage.googleapis.com \
-            street-view-image-backend.googleapis.com
+            street-view-image-backend.googleapis.com \
+            compute.googleapis.com
+
 ```
 
 Check they are enabled
 
-        gcloud services list --project <YOUR_PROJECT_ID>
-   
+        gcloud services list --project ${PROJECT_ID} 
 
 1. In GCP Console, under `APIS and Services` $\to$ `Credentials` create TWO new API keys. 
 
@@ -50,7 +53,88 @@ Allow the second one (`GENAI_API_KEY`) to use these APIs
 
 
 
-## Run with docker (recommended)
+## Run with docker on GCP (recommended)
+
+following instructions from https://cloud.google.com/build/docs/build-push-docker-image:
+
+```
+# set project id
+export PROJECT_ID=my_project_id
+gcloud config set project ${PROJECT_ID}
+
+# give permissions to service account
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:$(gcloud projects describe ${PROJECT_ID} \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/storage.objectUser"
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:$(gcloud projects describe ${PROJECT_ID} \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/artifactregistry.writer"
+
+gcloud iam service-accounts add-iam-policy-binding $(gcloud projects describe ${PROJECT_ID} \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --member=serviceAccount:$(gcloud projects describe ${PROJECT_ID} \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/iam.serviceAccountUser" \
+    --project=${PROJECT_ID}
+
+# enable apis
+gcloud services enable --project ${PROJECT_ID} \
+    cloudbuild.googleapis.com \
+    artifactregistry.googleapis.com \
+    run.googleapis.com 
+
+# create docker repo
+gcloud artifacts repositories create demo-repo --repository-format=docker     --location=us-west2 --description="Docker repository"
+
+# build image
+gcloud builds submit --region=us-west2 --tag us-west2-docker.pkg.dev/${PROJECT_ID}/demo-repo/genai-streetview-demo-image:v1
+
+# check build was ok
+gcloud builds list --region=us-west2 --filter="status=SUCCESS"
+
+# deploy in cloud run
+
+gcloud run deploy cloudrunservice --image us-west2-docker.pkg.dev/${PROJECT_ID}/demo-repo/genai-streetview-demo-image:v1 --region us-west2 --platform managed --allow-unauthenticated --port=5000 --set-env-vars=GENAI_API_KEY=<YOUR_GENAI_API_KEY>,GOOGLE_MAPS_API_KEY=<YOUR_GOOGLE_MAPS_API_KEY>
+
+
+
+# in IAM -> Organizational policies
+search for ` iam.allowedPolicyMemberDomains`, enable it and make a rule to 'allow all'
+
+# allow for any user
+gcloud beta run services add-iam-policy-binding --region=us-west2 --member=allUsers --role=roles/run.invoker cloudrunservice
+
+# get a description of the cloudrun service
+gcloud run services describe cloudrunservice --region us-west2
+
+# copy the URL and open it in a browser
+
+
+
+```
+
+
+```
+
+# DONT: gcloud builds submit --region=us-west2 --config cloudbuild.yaml
+
+# add role webIapUser to service account
+
+enable oauth consent screen for your project
+
+gcloud beta run services update cloudrunservice --region=us-west2 --iap
+
+gcloud projects  add-iam-policy-binding genai-streetview-demo --member=group:googlers@google.com     --role="roles/iap.httpsResourceAccessor" 
+
+gcloud projects  add-iam-policy-binding genai-streetview-demo --member=group:googlers@google.com     --role="roles/run.servicesInvoker" 
+
+
+```
+
+## Run with docker locally
 
 install
 

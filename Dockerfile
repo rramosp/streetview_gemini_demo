@@ -10,5 +10,5 @@ COPY app ./app
 COPY bin ./bin
 EXPOSE 5000
 
-CMD ["sh", "bin/start.sh"]
+CMD ["bin/start.sh"]
 
