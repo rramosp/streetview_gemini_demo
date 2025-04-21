@@ -37,7 +37,7 @@ Check they are enabled
 
         gcloud services list --project ${PROJECT_ID} 
 
-1. In GCP Console, under `APIS and Services` $\to$ `Credentials` create TWO new API keys. 
+2. In GCP Console, under `APIS and Services` $\to$ `Credentials` create TWO new API keys. 
 
 Allow one (`GOOGLE_MAPS_API_KEY`) to use the following API
 
