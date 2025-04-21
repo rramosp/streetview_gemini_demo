@@ -57,12 +57,14 @@ Allow the second one (`GENAI_API_KEY`) to use these APIs
 
 following instructions from https://cloud.google.com/build/docs/build-push-docker-image:
 
+set projet id
 ```
-# set project id
 export PROJECT_ID=my_project_id
 gcloud config set project ${PROJECT_ID}
 
-# give permissions to service account
+```
+give permissions to service account
+```
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:$(gcloud projects describe ${PROJECT_ID} \
     --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
@@ -80,12 +82,17 @@ gcloud iam service-accounts add-iam-policy-binding $(gcloud projects describe ${
     --role="roles/iam.serviceAccountUser" \
     --project=${PROJECT_ID}
 
-# enable apis
+```
+enable apis
+```
 gcloud services enable --project ${PROJECT_ID} \
     cloudbuild.googleapis.com \
     artifactregistry.googleapis.com \
     run.googleapis.com 
+```
+create docker image in Google Cloud
 
+```
 # create docker repo
 gcloud artifacts repositories create demo-repo --repository-format=docker     --location=us-west2 --description="Docker repository"
 
@@ -95,11 +102,15 @@ gcloud builds submit --region=us-west2 --tag us-west2-docker.pkg.dev/${PROJECT_I
 # check build was ok
 gcloud builds list --region=us-west2 --filter="status=SUCCESS"
 
-# deploy in cloud run
+```
+deploy in cloud run
+```
 
 gcloud run deploy cloudrunservice --image us-west2-docker.pkg.dev/${PROJECT_ID}/demo-repo/genai-streetview-demo-image:v1 --region us-west2 --platform managed --allow-unauthenticated --port=5000 --set-env-vars=GENAI_API_KEY=<YOUR_GENAI_API_KEY>,GOOGLE_MAPS_API_KEY=<YOUR_GOOGLE_MAPS_API_KEY>
 
-
+```
+enable access
+```
 
 # in IAM -> Organizational policies
 search for ` iam.allowedPolicyMemberDomains`, enable it and make a rule to 'allow all'
@@ -111,26 +122,6 @@ gcloud beta run services add-iam-policy-binding --region=us-west2 --member=allUs
 gcloud run services describe cloudrunservice --region us-west2
 
 # copy the URL and open it in a browser
-
-
-
-```
-
-
-```
-
-# DONT: gcloud builds submit --region=us-west2 --config cloudbuild.yaml
-
-# add role webIapUser to service account
-
-enable oauth consent screen for your project
-
-gcloud beta run services update cloudrunservice --region=us-west2 --iap
-
-gcloud projects  add-iam-policy-binding genai-streetview-demo --member=group:googlers@google.com     --role="roles/iap.httpsResourceAccessor" 
-
-gcloud projects  add-iam-policy-binding genai-streetview-demo --member=group:googlers@google.com     --role="roles/run.servicesInvoker" 
-
 
 ```
 
