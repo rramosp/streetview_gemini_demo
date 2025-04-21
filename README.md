@@ -1,4 +1,4 @@
-# Streetview analytics with Gemini
+# Gemini on Google Streetview Imagery
 
 This demo allows you to navigate to a location in Google StreetView and use Gemini to find stuff about it. For instance
 
@@ -23,6 +23,7 @@ create or choose a project in GCP and follow these steps
    
 ```
         export PROJECT_ID=my_project_id
+        gcloud config set project ${PROJECT_ID}
 
         gcloud services enable --project ${PROJECT_ID} \
             maps-backend.googleapis.com \
