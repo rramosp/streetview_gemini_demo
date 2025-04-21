@@ -19,17 +19,17 @@ This demo allows you to navigate to a location in Google StreetView and use Gemi
 create or choose a project in GCP and follow these steps
 
 
-1. Enable the APIs
+1. **Enable the APIs**
    
 ```
-        export PROJECT_ID=my_project_id
-        gcloud config set project ${PROJECT_ID}
+export PROJECT_ID=my_project_id
+gcloud config set project ${PROJECT_ID}
 
-        gcloud services enable --project ${PROJECT_ID} \
-            maps-backend.googleapis.com \
-            generativelanguage.googleapis.com \
-            street-view-image-backend.googleapis.com \
-            compute.googleapis.com
+gcloud services enable --project ${PROJECT_ID} \
+    maps-backend.googleapis.com \
+    generativelanguage.googleapis.com \
+    street-view-image-backend.googleapis.com \
+    compute.googleapis.com
 
 ```
 
@@ -37,7 +37,7 @@ Check they are enabled
 
         gcloud services list --project ${PROJECT_ID} 
 
-2. In GCP Console, under `APIS and Services` $\to$ `Credentials` create TWO new API keys. 
+2. **Create TWO new API keys** in GCP Console, under `APIS and Services` $\to$ `Credentials` . 
 
 Allow one (`GOOGLE_MAPS_API_KEY`) to use the following API
 
@@ -57,11 +57,6 @@ Allow the second one (`GENAI_API_KEY`) to use these APIs
 ## Run with docker on GCP (recommended)
 
 following instructions from https://cloud.google.com/build/docs/build-push-docker-image:
-
-set projet id
-```
-export PROJECT_ID=my_project_id
-gcloud config set project ${PROJECT_ID}
 
 ```
 give permissions to service account
@@ -156,7 +151,7 @@ install
 run
 
     export GOOGLE_MAPS_API_KEY=[your google maps api key]
-    export GENAI_API_KEY=[your geani api key]
+    export GENAI_API_KEY=[your genai api key]
     bin/start.sh
 
 open your browser at [http://localhost:5000](http://localhost:5000)
